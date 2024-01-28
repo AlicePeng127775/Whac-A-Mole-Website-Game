@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>	
+
+    <title>Whac-A-Mole</title>
+</head>
+<body>
+    <header>
+        <h1>Whac-A-Mole</h1>
+        <audio id="audio_player">
+            <source src="music/BGM1.mp3" type="audio/mpeg">
+        </audio>
+
+        <audio id="hit_music">
+            <source src="music/TinyMouse.wav" type="audio/mpeg">
+        </audio>
+        <div class="left">
+            <div class="time"> TIME : 30 s</div>
+            <div class="counter">SCORE : 0</div>
+            <div class="playButton">
+                <button id="refresh" class="refresh"></button>
+                <button id="pBtn" class="pause"></button>
+            </div>
+        </div>
+        <div class="start" id="startButton">
+            <button class="button">Start</button>
+        </div>
+        <div>
+
+        </div>
+       
+    </header>
+  
+    <div class="container">
+
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+           
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            <div class="hold"><img  class="mouseDown mouses" src="img/jerry.png" alt="jerry"> </div>
+            
+             <div id="hammer"></div>
+    </div>
+   
+
+    <script>
+        const mouses = document.querySelectorAll('.mouses');
+        const startBtn = document.querySelector('.button');
+        const refreshBtn = document.querySelector('#refresh');
+        const pauseBtn = document.querySelector('#pBtn');
+        const hammer = document.querySelector("#hammer");
+        const myContainer = document.querySelector(".container");
+        const countdown = document.querySelector('.time');
+        const score = document.querySelector(".counter");
+        const music = document.querySelector('#audio_player');
+        const hitMouseMusic = document.querySelector('#hit_music')
+        let gameStart = false;
+        let time = 30;
+        let timer;
+        let showInterval;
+        var ctr = 0;
+        let gamePaused = false;
+
+        // Move Hammer with Cursor  
+        function moveCursor(e){
+            let hammerX = e.clientX - myContainer.getBoundingClientRect().left - 75;
+            let hammerY = e.clientY - myContainer.getBoundingClientRect().top - 75;
+            hammer.style.transform = 'translate(' + hammerX + 'px,' + hammerY + 'px)';
+        }
+
+        //Display mouse, add class and css animation        
+        function show() {
+            let randomIndex = Math.floor(Math.random() * 10);
+            let mouse = mouses[randomIndex];
+            mouse.classList.add('mouseUp');
+            mouse.classList.remove('mouseDown');
+
+            setTimeout(function () {
+                mouse.classList.add('mouseDown');
+                mouse.classList.remove('mouseUp');
+            }, 2000);
+        }
+
+
+        function showMouse() {
+            showInterval = setInterval(function () {
+                if (!gamePaused) {
+                    show();
+                }
+        }, 500);
+        
+            // Stop generating mice after 30 seconds
+            setTimeout(function () {
+                clearInterval(showInterval);
+            }, 30000);
+        }
+
+        //Hammer Hit Mouse
+        function hit() {
+            //Hammer Hit Animation
+            hammer.style.backgroundImage = "url('./img/hammer2.png')";
+            setTimeout(function() {
+                hammer.style.backgroundImage = "url('./img/hammer.png')";
+            }, 200);
+
+
+
+            let hammerRect = hammer.getBoundingClientRect();
+            //console.log("x:" + hammerRect.left + ", h:" + hammerRect.top + ",w:"+hammerRect.width + ", h:" + hammerRect.height);
+            mouses.forEach(function(mouse){
+                
+            })
+            for (i = 0; i < mouses.length; i++){
+                let mouseRect = mouses[i].getBoundingClientRect();
+        
+                if (Math.abs(hammerRect.left + hammerRect.width / 2 - (mouseRect.left + mouseRect.width / 2)) 
+                    < (hammerRect.width + mouseRect.width) / 2
+                   && Math.abs(hammerRect.top + hammerRect.height / 2 - (mouseRect.top + mouseRect.height / 2)) 
+                    < (hammerRect.height + mouseRect.height) / 2 && mouseRect.width > 0 && mouseRect.height > 0){
+                        ctr++;
+                        score.innerHTML = "SCORE: " + ctr;
+                        mouses[i].classList.add('mouseDown');
+                        hitMouseMusic.currentTime = 0;
+                        hitMouseMusic.play();
+                    }
+            }
+        }
+
+        function startCountdown() {
+             time--;
+             countdown.innerHTML = "TIME : " + time + " s";
+    
+         if (time <= 0) {
+             clearInterval(timer);
+             alert("Congratulations, your score is " + (ctr) + "!!!!");
+             countdown.innerHTML = "TIME : 0 s";
+            // Show the "Start" button again 
+            document.getElementById('startButton').style.display = 'flex';
+            score.innerHTML = "SCORE: 0";
+            music.pause();
+            music.currentTime = 0;
+            }
+        }
+
+        function start() {
+            myContainer.style.display = 'flex';
+            time = 30;
+            music.play();
+            //Clear the score to zero.
+            ctr = 0;
+            clearInterval(timer);
+            timer = setInterval(startCountdown, 1000);
+            document.getElementById('startButton').style.display = 'none'; // Hide the start button
+        }
+
+        
+    
+        function pauseGame() {
+            if (gamePaused) {
+                // Resume the game
+                timer = setInterval(startCountdown, 500);
+                showMouse();
+                gamePaused = false;
+                pauseBtn.className = "pause";
+                music.play();
+            } else {
+                // Pause the game
+                clearInterval(timer);
+                gamePaused = true;
+                pauseBtn.className = "play";
+                music.pause();
+            }
+        }
+
+        function refreshGame() {
+            location.reload();
+        }
+
+        myContainer.addEventListener('mousemove', moveCursor);
+        hammer.addEventListener("click", hit);
+        startBtn.addEventListener('click', showMouse);
+        startBtn.addEventListener('click', start);
+        document.getElementById('refresh').addEventListener('click', refreshGame);
+        document.getElementById('pBtn').addEventListener('click', pauseGame);
+    </script>
+</body>
+</html>
